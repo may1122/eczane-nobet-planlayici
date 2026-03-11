@@ -13,7 +13,22 @@ if st.button("Plan Oluştur"):
     file1,file2 = run_schedule(yil,ay,kac_ay)
 
     with open(file1,"rb") as f:
-        st.download_button("Excel indir",f,"nobet_plani.xlsx")
+        st.session_state.plan_data = f.read()
 
     with open(file2,"rb") as f:
-        st.download_button("Aylık istatistik indir",f,"aylik_detay.xlsx")
+        st.session_state.aylik_data = f.read()
+
+
+if "plan_data" in st.session_state and "aylik_data" in st.session_state:
+
+    st.download_button(
+        "Excel indir",
+        st.session_state.plan_data,
+        "nobet_plani.xlsx"
+    )
+
+    st.download_button(
+        "Aylık istatistik indir",
+        st.session_state.aylik_data,
+        "aylik_detay.xlsx"
+    )
