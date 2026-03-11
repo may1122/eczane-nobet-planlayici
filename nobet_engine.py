@@ -495,6 +495,9 @@ def main(y,m,nm):
     # ==============================
     # GENEL OZET SAYFASI
     # ==============================
+        # ==============================
+    # GENEL OZET SAYFASI
+    # ==============================
 
     summary = wb.create_sheet("GENEL OZET")
 
@@ -504,7 +507,7 @@ def main(y,m,nm):
         "Geçmiş Katsayı",
         "Geçmiş Bayram",
         "Toplam Katsayı",
-        "Toplam Bayram"
+        "Toplam Bayram",
         "Pzt","Salı","Çarş","Perş","Cuma","Ctesi","Pazar"
     ])
 
@@ -512,32 +515,32 @@ def main(y,m,nm):
 
     for p in totals:
 
-    gecmis = GECMIS_YUK.get(p,{"bayram":0,"haftasonu":0,"normal":0})
+        gecmis = GECMIS_YUK.get(p,{"bayram":0,"haftasonu":0,"normal":0})
 
-    gecmis_katsayi = (
-        gecmis["bayram"]*2 +
-        gecmis["haftasonu"]*1.5 +
-        gecmis["normal"]
-    )
+        gecmis_katsayi = (
+            gecmis["bayram"]*2 +
+            gecmis["haftasonu"]*1.5 +
+            gecmis["normal"]
+        )
 
-    toplam_katsayi = gecmis_katsayi + totals[p]
-    toplam_bayram = gecmis["bayram"] + bayram_stats[p]
+        toplam_katsayi = gecmis_katsayi + totals[p]
+        toplam_bayram = gecmis["bayram"] + bayram_stats[p]
 
-    summary.append([
-        p,
-        eczane_grup.get(p,""),
-        round(gecmis_katsayi,2),
-        gecmis["bayram"],
-        round(toplam_katsayi,2),
-        toplam_bayram,
-        weekday_stats[p][0],
-        weekday_stats[p][1],
-        weekday_stats[p][2],
-        weekday_stats[p][3],
-        weekday_stats[p][4],
-        weekday_stats[p][5],
-        weekday_stats[p][6]
-    ])
+        summary.append([
+            p,
+            eczane_grup.get(p,""),
+            round(gecmis_katsayi,2),
+            gecmis["bayram"],
+            round(toplam_katsayi,2),
+            toplam_bayram,
+            weekday_stats[p][0],
+            weekday_stats[p][1],
+            weekday_stats[p][2],
+            weekday_stats[p][3],
+            weekday_stats[p][4],
+            weekday_stats[p][5],
+            weekday_stats[p][6]
+        ])
 
     for c in summary[1]:
         c.font = Font(bold=True)
@@ -545,7 +548,7 @@ def main(y,m,nm):
     wb.remove(wb["Sheet"])
 
     wb.save("Son.xlsx")
-
+   
     # ==============================
     # AYLIK DETAY EXCEL
     # ==============================
