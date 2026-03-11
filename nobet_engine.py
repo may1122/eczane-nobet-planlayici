@@ -1,5 +1,5 @@
 import calendar
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 import random
 from openpyxl import Workbook
 from openpyxl.styles import Font
@@ -16,37 +16,45 @@ MIN_GAP_DAYS = 14
 eklenme_tarihi = {}
 cikma_tarihi = {}
 
-# --- GEÇMİŞ YÜKLER (senin verdiğin aynen bırakıldı) ---
-GECMIS_YUK = {...}   # BURAYA SENİN VERDİĞİN SÖZLÜK AYNEN GELİYOR
-
+GECMIS_YUK = {
+"YÖRÜKSELİM": {"bayram": 2, "haftasonu": 0, "normal": 2},
+"CEYLAN": {"bayram": 2, "haftasonu": 1, "normal": 2},
+"KAZANCI": {"bayram": 2, "haftasonu": 0, "normal": 2},
+"NESİBE": {"bayram": 3, "haftasonu": 1, "normal": 1},
+"ONUR": {"bayram": 2, "haftasonu": 1, "normal": 2},
+"DEMİRCİLER": {"bayram": 2, "haftasonu": 0, "normal": 2},
+"ÇINAR": {"bayram": 2, "haftasonu": 1, "normal": 2},
+"AKSU": {"bayram": 3, "haftasonu": 0, "normal": 2},
+"AKPINAR": {"bayram": 2, "haftasonu": 0, "normal": 3},
+"ÖZCAN": {"bayram": 2, "haftasonu": 1, "normal": 2},
+"YERHAN": {"bayram": 2, "haftasonu": 1, "normal": 0},
+"MAĞRALI": {"bayram": 2, "haftasonu": 0, "normal": 3},
+"GAZİ": {"bayram": 1.8, "haftasonu": 0, "normal": 2},
+"GLSAH": {"bayram": 1.8, "haftasonu": 1, "normal": 2},
+"CEYDA İLHAN": {"bayram": 1.8, "haftasonu": 1, "normal": 2},
+"İBNİ SİNA 2": {"bayram": 1.8, "haftasonu": 0, "normal": 3},
+}
 
 def turkiye_tatilleri(year):
     return {
         date(year,1,1), date(year,4,23), date(year,5,1),
         date(year,5,19), date(year,7,15),
         date(year,8,30), date(year,10,29),
-
         date(2026,3,20),date(2026,3,21),date(2026,3,22),
         date(2026,5,27),date(2026,5,28),
         date(2026,5,29),date(2026,5,30),
-        date(2027,3,20),date(2027,3,21),date(2027,3,22),
-        date(2027,5,27),date(2027,5,28),
-        date(2027,5,29),date(2027,5,30),
     }
 
 def arefe_gunleri(year):
-    return {
-        date(2026,3,19), date(2026,5,26),
-        date(2027,3,19), date(2027,5,26)
-    }
+    return {date(2026,3,19), date(2026,5,26)}
 
 def day_weight(d, tatil,arefe):
     if d in tatil or d.weekday()==6: return 2.0
     if d.weekday()==5 or d in arefe: return 1.5
     return 1.0
 
-
 def score_person(p,d,w,totals,counts,weekday_stats,last_dates):
+
     skor = totals[p]*DENGE_KATSAYI + counts[p]
 
     if weekday_stats[p][d.weekday()] >= MAX_SAME_WEEKDAY:
@@ -60,7 +68,6 @@ def score_person(p,d,w,totals,counts,weekday_stats,last_dates):
         skor += AGIR_GUN_FRENI * weekday_stats[p][d.weekday()]
 
     return skor + random.random()*0.01
-
 
 def zorunlu_secim(grup,d,w,tatil,totals,counts,weekday_stats,last_dates,bayram_stats):
 
@@ -91,18 +98,42 @@ def zorunlu_secim(grup,d,w,tatil,totals,counts,weekday_stats,last_dates,bayram_s
 
     return min(adaylar, key=lambda p: score_person(p,d,w,totals,counts,weekday_stats,last_dates))
 
-
-# GRUPLAR (senin verdiğin aynen)
 def create_groups():
+
     return {
-        # SENİN TÜM GRUPLARIN BURADA AYNI
-    }
 
+"A1": ["ŞAHBAZ","BATUHAN","İRŞAD"],
+"A2": ["GÖKTUĞ","GÜNEY","NEŞE SAYIT"],
+"A3": ["ESRA AKSOY","NAR","AVŞAROĞLU"],
 
-KOMB_ABC=[("A1","B2","C3"),("B1","C2","A3"),("C1","A2","B3"),("A1","C2","B3"),("B1","A2","C3"),("C1","B2","A3")]
-KOMB_DEG=[("D1","E2","G3"),("E1","G2","D3"),("G1","D2","E3"),("D1","G2","E3"),("E1","D2","G3"),("G1","E2","D3")]
+"B1": ["NİŞANTAŞI","EDA","ŞENEL"],
+"B2": ["SERPİL","FURKAN","ARISOY"],
+"B3": ["TEKEREK","KAYNAR","NATUREL"],
+
+"C1": ["FİLİZ","ÇİĞDEM","KARŞIYAKA"],
+"C2": ["PAKSOY","ZEYNEP","GÖKÇE"],
+"C3": ["NİSAN","SELİN","IHLAMUR"],
+
+"D1": ["YAĞMUR","AYSUN","CEREN"],
+"D2": ["ÇARE","KOÇAK","KEREM"],
+"D3": ["ERSOY","HACETTEPE","SAĞOCAK"],
+
+"E1": ["ONUR","ÖZCAN","AKSU"],
+"E2": ["KAZANCI","DOĞAN","HARUN"],
+"E3": ["CEYLAN","ÇINAR","TUNA"],
+
+"F1": ["ARAS","YUNUS EMRE","ERDİ"],
+"F2": ["SÜMEN","TUĞBA","MAVİ"],
+"F3": ["ÖZLEM","KARAKÜÇÜK","AYLİN TATLI"],
+
+"G1": ["SIDIKA","TUĞRUL","BESLER"],
+"G2": ["YILDIRIM","DEVA","ŞİFA"],
+"G3": ["GÜNEŞ","KARACAOĞLAN","ÇEVİK"]
+}
+
+KOMB_ABC=[("A1","B2","C3"),("B1","C2","A3"),("C1","A2","B3")]
+KOMB_DEG=[("D1","E2","G3"),("E1","G2","D3"),("G1","D2","E3")]
 F_ROTASYON=["F1","F2","F3"]
-
 
 def generate_month(groups, year, month, totals, counts, weekday_stats, bayram_stats, last_dates):
 
@@ -121,7 +152,7 @@ def generate_month(groups, year, month, totals, counts, weekday_stats, bayram_st
 
         picks = {}
 
-        for g in KOMB_ABC[i % 6] + KOMB_DEG[i % 6]:
+        for g in KOMB_ABC[i % 3] + KOMB_DEG[i % 3]:
 
             pick = zorunlu_secim(groups[g], d, w, tatil, totals, counts, weekday_stats, last_dates, bayram_stats)
 
@@ -172,6 +203,7 @@ def main(y,m,nm):
         month=((m-1+k)%12)+1
 
         ws=wb.create_sheet(f"{year}-{month:02d}")
+
         ws.append(header)
 
         sched=generate_month(groups,year,month,totals,counts,weekday_stats,bayram_stats,last_dates)
@@ -191,12 +223,11 @@ def main(y,m,nm):
     wb.remove(wb["Sheet"])
     wb.save("Son.xlsx")
 
-    wb2=Workbook()
-    ws2=wb2.active
-    ws2.title="AYLIK DETAY"
+    wb2 = Workbook()
+    ws2 = wb2.active
+    ws2.title = "AYLIK DETAY"
     ws2.append(["Bilgi"])
-    ws2.append(["Detay dosyası"])
-
+    ws2.append(["Aylık detay verisi bu versiyonda üretilmedi"])
     wb2.save("aylik_nobet_data.xlsx")
 
     return "Son.xlsx","aylik_nobet_data.xlsx"
