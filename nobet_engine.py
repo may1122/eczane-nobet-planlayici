@@ -228,7 +228,15 @@ def main(y,m,nm):
     wb.remove(wb["Sheet"])
     wb.save("Son.xlsx")
 
-    return "Son.xlsx"
+# ikinci dosya (boş bile olsa Streamlit için gerekli)
+    wb2 = Workbook()
+    ws2 = wb2.active
+    ws2.title = "AYLIK DETAY"
+    ws2.append(["Bilgi"])
+    ws2.append(["Aylık detay verisi bu versiyonda üretilmedi"])
+    wb2.save("aylik_nobet_data.xlsx")
+
+return "Son.xlsx","aylik_nobet_data.xlsx"
 
 
 def run_schedule(y,m,nm):
