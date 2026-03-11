@@ -396,6 +396,9 @@ def generate_month(groups, year, month, totals, counts, weekday_stats, bayram_st
 
 def main(y,m,nm):
 
+    global monthly_stats
+    monthly_stats = defaultdict(lambda: defaultdict(lambda: {"bayram":0,"haftasonu":0,"normal":0}))
+
     groups=create_groups()
 
     totals={p:0 for g in groups.values() for p in g}
@@ -454,7 +457,7 @@ def main(y,m,nm):
             c.font=Font(bold=True)
 
     # =========================
-    # GENEL OZET SAYFASI
+    # GENEL OZET
     # =========================
 
     summary=wb.create_sheet("GENEL OZET")
@@ -492,28 +495,33 @@ def main(y,m,nm):
     wb.remove(wb["Sheet"])
     wb.save("Son.xlsx")
 
+    # =========================
+    # AYLIK NÖBET DATA
+    # =========================
+
     wb2 = Workbook()
-ws2 = wb2.active
-ws2.title = "AYLIK DETAY"
+    ws2 = wb2.active
+    ws2.title = "AYLIK DETAY"
 
-ws2.append(["Eczane","Yıl","Ay","Bayram","Hafta Sonu","Normal"])
+    ws2.append(["Eczane","Yıl","Ay","Bayram","Hafta Sonu","Normal"])
 
-for eczane in sorted(monthly_stats.keys()):
-    for (yil, ay), veri in sorted(monthly_stats[eczane].items()):
-        ws2.append([
-            eczane,
-            yil,
-            ay,
-            veri["bayram"],
-            veri["haftasonu"],
-            veri["normal"]
-        ])
+    for eczane in sorted(monthly_stats.keys()):
+        for (yil, ay), veri in sorted(monthly_stats[eczane].items()):
+            ws2.append([
+                eczane,
+                yil,
+                ay,
+                veri["bayram"],
+                veri["haftasonu"],
+                veri["normal"]
+            ])
 
-for c in ws2[1]:
-    c.font = Font(bold=True)
+    for c in ws2[1]:
+        c.font = Font(bold=True)
 
-wb2.save("aylik_nobet_data.xlsx")
+    wb2.save("aylik_nobet_data.xlsx")
 
+    return "Son.xlsx","aylik_nobet_data.xlsx"
     return "Son.xlsx","aylik_nobet_data.xlsx"
 
 
