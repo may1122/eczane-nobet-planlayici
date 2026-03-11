@@ -443,39 +443,46 @@ def generate_month(groups,year,month,totals,counts,weekday_stats,bayram_stats,la
 # =====================================
 # MAIN
 # =====================================
-
 def main(y,m,nm):
 
-    groups=create_groups()
+    groups = create_groups()
 
-    totals={p:0 for g in groups.values() for p in g}
-    counts={p:0 for g in groups.values() for p in g}
-    weekday_stats={p:{i:0 for i in range(7)} for p in totals}
-    bayram_stats={p:0 for p in totals}
-    last_dates={}
+    totals = {p:0 for g in groups.values() for p in g}
+    counts = {p:0 for g in groups.values() for p in g}
+    weekday_stats = {p:{i:0 for i in range(7)} for p in totals}
+    bayram_stats = {p:0 for p in totals}
+    last_dates = {}
 
-    wb=Workbook()
+    wb = Workbook()
 
-    gun=["Pzt","Salı","Çarş","Perş","Cuma","Ctesi","Pazar"]
-    header=["Tarih","Gün"]+list(groups.keys())
+    gun = ["Pzt","Salı","Çarş","Perş","Cuma","Ctesi","Pazar"]
+    header = ["Tarih","Gün"] + list(groups.keys())
 
     for k in range(nm):
 
-        year=y+((m-1+k)//12)
-        month=((m-1+k)%12)+1
+        year = y + ((m-1+k)//12)
+        month = ((m-1+k)%12)+1
 
-        ws=wb.create_sheet(f"{year}-{month:02d}")
+        ws = wb.create_sheet(f"{year}-{month:02d}")
         ws.append(header)
 
-        sched=generate_month(
-            groups,year,month,
-            totals,counts,
-            weekday_stats,bayram_stats,last_dates
+        sched = generate_month(
+            groups,
+            year,
+            month,
+            totals,
+            counts,
+            weekday_stats,
+            bayram_stats,
+            last_dates
         )
 
         for d,p in sorted(sched.items()):
 
-            row=[d.strftime("%d.%m.%Y"),gun[d.weekday()]]
+            row = [
+                d.strftime("%d.%m.%Y"),
+                gun[d.weekday()]
+            ]
 
             for g in groups:
                 row.append(p.get(g,""))
@@ -483,45 +490,65 @@ def main(y,m,nm):
             ws.append(row)
 
         for c in ws[1]:
-            c.font=Font(bold=True)
-    summary=wb.create_sheet("GENEL OZET")
+            c.font = Font(bold=True)
 
-summary.append([
-"Eczane","Grup","Toplam Nöbet","Toplam Katsayı","Bayram",
-"Pzt","Salı","Çarş","Perş","Cuma","Ctesi","Pazar"
-])
+    # ==============================
+    # GENEL OZET SAYFASI
+    # ==============================
 
-eczane_grup={p:g for g,plist in groups.items() for p in plist}
-
-for p in totals:
+    summary = wb.create_sheet("GENEL OZET")
 
     summary.append([
-        p,
-        eczane_grup.get(p,""),
-        counts[p],
-        round(totals[p],2),
-        bayram_stats[p],
-        weekday_stats[p][0],
-        weekday_stats[p][1],
-        weekday_stats[p][2],
-        weekday_stats[p][3],
-        weekday_stats[p][4],
-        weekday_stats[p][5],
-        weekday_stats[p][6],
+        "Eczane",
+        "Grup",
+        "Toplam Nöbet",
+        "Toplam Katsayı",
+        "Bayram",
+        "Pzt","Salı","Çarş","Perş","Cuma","Ctesi","Pazar"
     ])
 
-for c in summary[1]:
-    c.font=Font(bold=True)
+    eczane_grup = {p:g for g,plist in groups.items() for p in plist}
+
+    for p in totals:
+
+        summary.append([
+            p,
+            eczane_grup.get(p,""),
+            counts[p],
+            round(totals[p],2),
+            bayram_stats[p],
+            weekday_stats[p][0],
+            weekday_stats[p][1],
+            weekday_stats[p][2],
+            weekday_stats[p][3],
+            weekday_stats[p][4],
+            weekday_stats[p][5],
+            weekday_stats[p][6]
+        ])
+
+    for c in summary[1]:
+        c.font = Font(bold=True)
+
     wb.remove(wb["Sheet"])
+
     wb.save("Son.xlsx")
 
-    # AYLIK DETAY
+    # ==============================
+    # AYLIK DETAY EXCEL
+    # ==============================
 
-    wb2=Workbook()
-    ws2=wb2.active
-    ws2.title="AYLIK DETAY"
+    wb2 = Workbook()
+    ws2 = wb2.active
+    ws2.title = "AYLIK DETAY"
 
-    ws2.append(["Eczane","Yıl","Ay","Bayram","Hafta Sonu","Normal"])
+    ws2.append([
+        "Eczane",
+        "Yıl",
+        "Ay",
+        "Bayram",
+        "Hafta Sonu",
+        "Normal"
+    ])
 
     for eczane in sorted(monthly_stats.keys()):
 
@@ -537,11 +564,12 @@ for c in summary[1]:
             ])
 
     for c in ws2[1]:
-        c.font=Font(bold=True)
+        c.font = Font(bold=True)
 
     wb2.save("aylik_nobet_data.xlsx")
 
     return "Son.xlsx","aylik_nobet_data.xlsx"
+
 
 # =====================================
 # STREAMLIT ÇAĞIRMA
