@@ -534,7 +534,7 @@ def main(y,m,nm):
             gecmis["bayram"],
             counts[p],     
             round(toplam_katsayi,2),
-            bayram_stats[p]
+            ayram_stats[p]
             weekday_stats[p][0],
             weekday_stats[p][1],
             weekday_stats[p][2],
