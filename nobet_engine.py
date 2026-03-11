@@ -538,7 +538,7 @@ def run_schedule(y, m, nm, eklenme=None, cikma=None):
         cikma = {}
 
     # Global değişkenleri güncelle
-    eklenme_tarihi = eklenme
+    eklenme_tarihi = {k:v["tarih"] for k,v in eklenme.items()}
     cikma_tarihi = cikma
 
     # Ana planlama fonksiyonunu çalıştır
