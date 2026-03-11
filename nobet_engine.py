@@ -493,11 +493,26 @@ def main(y,m,nm):
     wb.save("Son.xlsx")
 
     wb2 = Workbook()
-    ws2 = wb2.active
-    ws2.title = "AYLIK DETAY"
-    ws2.append(["Bilgi"])
-    ws2.append(["Aylık detay verisi bu versiyonda üretilmedi"])
-    wb2.save("aylik_nobet_data.xlsx")
+ws2 = wb2.active
+ws2.title = "AYLIK DETAY"
+
+ws2.append(["Eczane","Yıl","Ay","Bayram","Hafta Sonu","Normal"])
+
+for eczane in sorted(monthly_stats.keys()):
+    for (yil, ay), veri in sorted(monthly_stats[eczane].items()):
+        ws2.append([
+            eczane,
+            yil,
+            ay,
+            veri["bayram"],
+            veri["haftasonu"],
+            veri["normal"]
+        ])
+
+for c in ws2[1]:
+    c.font = Font(bold=True)
+
+wb2.save("aylik_nobet_data.xlsx")
 
     return "Son.xlsx","aylik_nobet_data.xlsx"
 
