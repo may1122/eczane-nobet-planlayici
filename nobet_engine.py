@@ -484,7 +484,34 @@ def main(y,m,nm):
 
         for c in ws[1]:
             c.font=Font(bold=True)
+    summary=wb.create_sheet("GENEL OZET")
 
+summary.append([
+"Eczane","Grup","Toplam Nöbet","Toplam Katsayı","Bayram",
+"Pzt","Salı","Çarş","Perş","Cuma","Ctesi","Pazar"
+])
+
+eczane_grup={p:g for g,plist in groups.items() for p in plist}
+
+for p in totals:
+
+    summary.append([
+        p,
+        eczane_grup.get(p,""),
+        counts[p],
+        round(totals[p],2),
+        bayram_stats[p],
+        weekday_stats[p][0],
+        weekday_stats[p][1],
+        weekday_stats[p][2],
+        weekday_stats[p][3],
+        weekday_stats[p][4],
+        weekday_stats[p][5],
+        weekday_stats[p][6],
+    ])
+
+for c in summary[1]:
+    c.font=Font(bold=True)
     wb.remove(wb["Sheet"])
     wb.save("Son.xlsx")
 
