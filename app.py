@@ -4,13 +4,66 @@ import datetime
 
 st.title("💊 Eczane Nöbet Planlayıcı")
 
+# ================================
+# ECZANE EKLE / ÇIKAR PANELİ
+# ================================
+
+st.subheader("Eczane Değişikliği")
+
+degisim = st.radio(
+    "Eczane ekle / çıkar yapmak istiyor musunuz?",
+    ("Hayır","Evet")
+)
+
+eklenme = {}
+cikma = {}
+
+if degisim == "Evet":
+
+    st.markdown("### ➕ Eczane Ekle")
+
+    eczane_ekle = st.text_input("Eklenecek Eczane İsmi")
+
+    ekleme_tarihi = st.date_input(
+        "Eczane Eklenme Tarihi",
+        value=datetime.date.today()
+    )
+
+    if eczane_ekle:
+        eklenme[eczane_ekle.upper()] = ekleme_tarihi
+
+
+    st.markdown("### ➖ Eczane Çıkar")
+
+    eczane_cikar = st.text_input("Çıkarılacak Eczane İsmi")
+
+    cikis_tarihi = st.date_input(
+        "Eczane Çıkış Tarihi",
+        value=datetime.date.today(),
+        key="cikis"
+    )
+
+    if eczane_cikar:
+        cikma[eczane_cikar.upper()] = cikis_tarihi
+
+
+st.divider()
+
+# ================================
+# PLAN PARAMETRELERİ
+# ================================
+
 yil = st.number_input("Yıl", value=datetime.datetime.now().year)
 ay = st.number_input("Başlangıç Ayı", 1,12,1)
 kac_ay = st.number_input("Kaç Ay",1,12,3)
 
+# ================================
+# PLAN OLUŞTUR
+# ================================
+
 if st.button("Plan Oluştur"):
 
-    file1,file2 = run_schedule(yil,ay,kac_ay)
+    file1,file2 = run_schedule(yil,ay,kac_ay,eklenme,cikma)
 
     with open(file1,"rb") as f:
         st.session_state.plan_data = f.read()
@@ -19,16 +72,20 @@ if st.button("Plan Oluştur"):
         st.session_state.aylik_data = f.read()
 
 
+# ================================
+# DOWNLOAD BUTONLARI
+# ================================
+
 if "plan_data" in st.session_state and "aylik_data" in st.session_state:
 
     st.download_button(
-        "Excel indir",
+        "📥 Nöbet Planını İndir",
         st.session_state.plan_data,
         "nobet_plani.xlsx"
     )
 
     st.download_button(
-        "Aylık istatistik indir",
+        "📊 Aylık İstatistik İndir",
         st.session_state.aylik_data,
         "aylik_detay.xlsx"
     )
