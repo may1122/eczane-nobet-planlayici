@@ -532,6 +532,7 @@ def main(y,m,nm):
             eczane_grup.get(p,""),
             round(gecmis_katsayi,2),
             gecmis["bayram"],
+            counts[p],     
             round(toplam_katsayi,2),
             toplam_bayram,
             weekday_stats[p][0],
