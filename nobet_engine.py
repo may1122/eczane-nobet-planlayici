@@ -325,13 +325,19 @@ def generate_month(groups, year, month, totals, counts, weekday_stats, bayram_st
     for i in range(dim):
 
         d = first + timedelta(days=i)
-        w = day_weight(d, tatil,arefe)
+        w = day_weight(d, tatil, arefe)
 
         picks = {}
 
         for g in KOMB_ABC[i % 3] + KOMB_DEG[i % 3]:
 
-            pick = zorunlu_secim(groups[g], d, w, tatil, totals, counts, weekday_stats, last_dates, bayram_stats)
+            pick = zorunlu_secim(
+                groups[g], d, w, tatil,
+                totals, counts,
+                weekday_stats,
+                last_dates,
+                bayram_stats
+            )
 
             picks[g] = pick
 
@@ -343,9 +349,26 @@ def generate_month(groups, year, month, totals, counts, weekday_stats, bayram_st
             if d in tatil:
                 bayram_stats[pick] += 1
 
+            # AYLIK ISTATISTIK
+            key = (d.year, d.month)
+
+            if d in tatil:
+                monthly_stats[pick][key]["bayram"] += 1
+            elif d.weekday() >= 5:
+                monthly_stats[pick][key]["haftasonu"] += 1
+            else:
+                monthly_stats[pick][key]["normal"] += 1
+
+
         fg = F_ROTASYON[i % 3]
 
-        pick = zorunlu_secim(groups[fg], d, w, tatil, totals, counts, weekday_stats, last_dates, bayram_stats)
+        pick = zorunlu_secim(
+            groups[fg], d, w, tatil,
+            totals, counts,
+            weekday_stats,
+            last_dates,
+            bayram_stats
+        )
 
         picks[fg] = pick
 
@@ -354,10 +377,22 @@ def generate_month(groups, year, month, totals, counts, weekday_stats, bayram_st
         weekday_stats[pick][d.weekday()] += 1
         last_dates[pick] = d
 
+        if d in tatil:
+            bayram_stats[pick] += 1
+
+        # AYLIK ISTATISTIK
+        key = (d.year, d.month)
+
+        if d in tatil:
+            monthly_stats[pick][key]["bayram"] += 1
+        elif d.weekday() >= 5:
+            monthly_stats[pick][key]["haftasonu"] += 1
+        else:
+            monthly_stats[pick][key]["normal"] += 1
+
         schedule[d] = picks
 
     return schedule
-
 
 def main(y,m,nm):
 
