@@ -20,9 +20,24 @@ cikma = {}
 
 if degisim == "Evet":
 
+    # ====================
+    # ECZANE EKLE
+    # ====================
+
     st.markdown("### ➕ Eczane Ekle")
 
     eczane_ekle = st.text_input("Eklenecek Eczane İsmi")
+
+    eczane_grup = st.selectbox(
+        "Eklenecek Grup",
+        ["A1","A2","A3",
+         "B1","B2","B3",
+         "C1","C2","C3",
+         "D1","D2","D3",
+         "E1","E2","E3",
+         "F1","F2","F3",
+         "G1","G2","G3"]
+    )
 
     ekleme_tarihi = st.date_input(
         "Eczane Eklenme Tarihi",
@@ -30,8 +45,14 @@ if degisim == "Evet":
     )
 
     if eczane_ekle:
-        eklenme[eczane_ekle.upper()] = ekleme_tarihi
+        eklenme[eczane_ekle.upper()] = {
+            "tarih": ekleme_tarihi,
+            "grup": eczane_grup
+        }
 
+    # ====================
+    # ECZANE ÇIKAR
+    # ====================
 
     st.markdown("### ➖ Eczane Çıkar")
 
@@ -54,8 +75,20 @@ st.divider()
 # ================================
 
 yil = st.number_input("Yıl", value=datetime.datetime.now().year)
-ay = st.number_input("Başlangıç Ayı", 1,12,1)
-kac_ay = st.number_input("Kaç Ay",1,12,3)
+
+ay = st.number_input(
+    "Başlangıç Ayı",
+    min_value=1,
+    max_value=12,
+    value=1
+)
+
+kac_ay = st.number_input(
+    "Kaç Ay",
+    min_value=1,
+    max_value=12,
+    value=3
+)
 
 # ================================
 # PLAN OLUŞTUR
@@ -63,7 +96,13 @@ kac_ay = st.number_input("Kaç Ay",1,12,3)
 
 if st.button("Plan Oluştur"):
 
-    file1,file2 = run_schedule(yil,ay,kac_ay,eklenme,cikma)
+    file1, file2 = run_schedule(
+        yil,
+        ay,
+        kac_ay,
+        eklenme,
+        cikma
+    )
 
     with open(file1,"rb") as f:
         st.session_state.plan_data = f.read()
