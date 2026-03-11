@@ -525,5 +525,21 @@ def main(y,m,nm):
     return "Son.xlsx","aylik_nobet_data.xlsx"
 
 
-def run_schedule(y,m,nm):
-    return main(y,m,nm)
+def run_schedule(y, m, nm, eklenme=None, cikma=None):
+
+    global eklenme_tarihi
+    global cikma_tarihi
+
+    # Eğer panelden veri gelmezse boş sözlük kullan
+    if eklenme is None:
+        eklenme = {}
+
+    if cikma is None:
+        cikma = {}
+
+    # Global değişkenleri güncelle
+    eklenme_tarihi = eklenme
+    cikma_tarihi = cikma
+
+    # Ana planlama fonksiyonunu çalıştır
+    return main(y, m, nm)
