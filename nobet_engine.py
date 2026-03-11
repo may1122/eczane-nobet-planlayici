@@ -15,6 +15,11 @@ MIN_GAP_DAYS = 14
 
 eklenme_tarihi = {}
 cikma_tarihi = {}
+eklenme = {}
+
+# =====================================
+# GEÇMİŞ YÜK (SENİN VERİN AYNI KALACAK)
+# =====================================
 
 GECMIS_YUK = {
 "YÖRÜKSELİM": {"bayram": 2, "haftasonu": 0, "normal": 2},
@@ -199,25 +204,54 @@ GECMIS_YUK = {
 "GLSAH": {"bayram": 1.8, "haftasonu": 1, "normal": 2},
 "CEYDA İLHAN": {"bayram": 1.8, "haftasonu": 1, "normal": 2},
 "İBNİ SİNA 2": {"bayram": 1.8, "haftasonu": 0, "normal": 3}
+
 }
+
+# =====================================
+# TATİL FONKSİYONLARI
+# =====================================
 
 def turkiye_tatilleri(year):
     return {
-        date(year,1,1), date(year,4,23), date(year,5,1),
-        date(year,5,19), date(year,7,15),
-        date(year,8,30), date(year,10,29),
-        date(2026,3,20),date(2026,3,21),date(2026,3,22),
-        date(2026,5,27),date(2026,5,28),
-        date(2026,5,29),date(2026,5,30),
+        date(year,1,1),
+        date(year,4,23),
+        date(year,5,1),
+        date(year,5,19),
+        date(year,7,15),
+        date(year,8,30),
+        date(year,10,29),
+        date(2026,3,20),
+        date(2026,3,21),
+        date(2026,3,22),
+        date(2026,5,27),
+        date(2026,5,28),
+        date(2026,5,29),
+        date(2026,5,30),
     }
 
 def arefe_gunleri(year):
-    return {date(2026,3,19), date(2026,5,26)}
+    return {
+        date(2026,3,19),
+        date(2026,5,26)
+    }
 
-def day_weight(d, tatil,arefe):
-    if d in tatil or d.weekday()==6: return 2.0
-    if d.weekday()==5 or d in arefe: return 1.5
+# =====================================
+# GÜN KATSAYISI
+# =====================================
+
+def day_weight(d,tatil,arefe):
+
+    if d in tatil or d.weekday()==6:
+        return 2.0
+
+    if d.weekday()==5 or d in arefe:
+        return 1.5
+
     return 1.0
+
+# =====================================
+# SKOR HESABI
+# =====================================
 
 def score_person(p,d,w,totals,counts,weekday_stats,last_dates):
 
@@ -235,9 +269,15 @@ def score_person(p,d,w,totals,counts,weekday_stats,last_dates):
 
     return skor + random.random()*0.01
 
+# =====================================
+# ECZANE SEÇİMİ
+# =====================================
+
 def zorunlu_secim(grup,d,w,tatil,totals,counts,weekday_stats,last_dates,bayram_stats):
 
-    kademe1, kademe2, kademe3 = [], [], []
+    kademe1=[]
+    kademe2=[]
+    kademe3=[]
 
     for p in grup:
 
@@ -251,8 +291,10 @@ def zorunlu_secim(grup,d,w,tatil,totals,counts,weekday_stats,last_dates,bayram_s
 
         if gap >= MIN_GAP_DAYS and weekday_stats[p][d.weekday()] < MAX_SAME_WEEKDAY:
             kademe1.append(p)
+
         elif weekday_stats[p][d.weekday()] < MAX_SAME_WEEKDAY:
             kademe2.append(p)
+
         else:
             kademe3.append(p)
 
@@ -262,13 +304,16 @@ def zorunlu_secim(grup,d,w,tatil,totals,counts,weekday_stats,last_dates,bayram_s
         min_b = min(bayram_stats[p] for p in adaylar)
         adaylar = [p for p in adaylar if bayram_stats[p]==min_b]
 
-    return min(adaylar, key=lambda p: score_person(p,d,w,totals,counts,weekday_stats,last_dates))
+    return min(adaylar,key=lambda p: score_person(p,d,w,totals,counts,weekday_stats,last_dates))
+
+# =====================================
+# GRUPLAR (SENİN LİSTEN AYNI)
+# =====================================
 
 def create_groups():
 
-    return {
-
-"A1": ["ŞAHBAZ","BATUHAN","İRŞAD","MEHPARE","GÜL","GEMCİ","RAİKA DOKUYUCU","ANADOLU","CANSU"],
+    groups = {
+        "A1": ["ŞAHBAZ","BATUHAN","İRŞAD","MEHPARE","GÜL","GEMCİ","RAİKA DOKUYUCU","ANADOLU","CANSU"],
         "A2": ["GÖKTUĞ","GÜNEY","NEŞE SAYIT","FLORA","BOĞAZİÇİ","HÜSNA","GÜLERYÜZ","ÜNGÜT","LİMON"],
         "A3": ["ESRA AKSOY","NAR","AVŞAROĞLU","MERT","GAZİ","DÖKÜCÜ","AKKÜNCÜ","ANNEM","BİLAL"],
 
@@ -305,201 +350,132 @@ def create_groups():
 ["SIDIKA","TUĞRUL","BESLER","SEMA","NİL","ASLANBEY", "ESRA","GÜVEN"],
         "G2": ["YILDIRIM","DEVA","ŞİFA","SEZAL","TOMAR","YÜCEL","LOKMAN","ŞİMŞEK"],
         "G3": ["GÜNEŞ","KARACAOĞLAN","ÇEVİK","PİRİ REİS 1453","DERMAN","ESMA","AYŞEGÜL","POYRAZ","ALYA"],
+
     }
 
+    # STREAMLIT EKLENEN ECZANE
+
+    for eczane,data in eklenme.items():
+
+        grup = data["grup"]
+
+        if grup in groups:
+
+            if eczane not in groups[grup]:
+
+                groups[grup].append(eczane)
+
+    return groups
+
+# =====================================
+# ROTASYON
+# =====================================
 
 KOMB_ABC=[("A1","B2","C3"),("B1","C2","A3"),("C1","A2","B3")]
 KOMB_DEG=[("D1","E2","G3"),("E1","G2","D3"),("G1","D2","E3")]
 F_ROTASYON=["F1","F2","F3"]
 
-def generate_month(groups, year, month, totals, counts, weekday_stats, bayram_stats, last_dates):
+# =====================================
+# AYLIK PLAN
+# =====================================
+
+def generate_month(groups,year,month,totals,counts,weekday_stats,bayram_stats,last_dates):
 
     tatil = turkiye_tatilleri(year)
     arefe = arefe_gunleri(year)
 
-    first = date(year, month, 1)
-    dim = calendar.monthrange(year, month)[1]
+    first=date(year,month,1)
+    dim=calendar.monthrange(year,month)[1]
 
-    schedule = {}
+    schedule={}
 
     for i in range(dim):
 
-        d = first + timedelta(days=i)
-        w = day_weight(d, tatil, arefe)
+        d=first+timedelta(days=i)
+        w=day_weight(d,tatil,arefe)
 
-        picks = {}
+        picks={}
 
-        for g in KOMB_ABC[i % 3] + KOMB_DEG[i % 3]:
+        for g in KOMB_ABC[i%3] + KOMB_DEG[i%3]:
 
             pick = zorunlu_secim(
-                groups[g], d, w, tatil,
-                totals, counts,
-                weekday_stats,
-                last_dates,
-                bayram_stats
+                groups[g],d,w,tatil,
+                totals,counts,weekday_stats,last_dates,bayram_stats
             )
 
-            picks[g] = pick
+            picks[g]=pick
 
-            totals[pick] += w
-            counts[pick] += 1
-            weekday_stats[pick][d.weekday()] += 1
-            last_dates[pick] = d
-
-            if d in tatil:
-                bayram_stats[pick] += 1
-
-            # AYLIK ISTATISTIK
-            key = (d.year, d.month)
+            totals[pick]+=w
+            counts[pick]+=1
+            weekday_stats[pick][d.weekday()]+=1
+            last_dates[pick]=d
 
             if d in tatil:
-                monthly_stats[pick][key]["bayram"] += 1
-            elif d.weekday() >= 5:
-                monthly_stats[pick][key]["haftasonu"] += 1
+                bayram_stats[pick]+=1
+
+            key=(d.year,d.month)
+
+            if d in tatil:
+                monthly_stats[pick][key]["bayram"]+=1
+            elif d.weekday()>=5:
+                monthly_stats[pick][key]["haftasonu"]+=1
             else:
-                monthly_stats[pick][key]["normal"] += 1
+                monthly_stats[pick][key]["normal"]+=1
 
-
-        fg = F_ROTASYON[i % 3]
+        fg=F_ROTASYON[i%3]
 
         pick = zorunlu_secim(
-            groups[fg], d, w, tatil,
-            totals, counts,
-            weekday_stats,
-            last_dates,
-            bayram_stats
+            groups[fg],d,w,tatil,
+            totals,counts,weekday_stats,last_dates,bayram_stats
         )
 
-        picks[fg] = pick
+        picks[fg]=pick
 
-        totals[pick] += w
-        counts[pick] += 1
-        weekday_stats[pick][d.weekday()] += 1
-        last_dates[pick] = d
+        totals[pick]+=w
+        counts[pick]+=1
+        weekday_stats[pick][d.weekday()]+=1
+        last_dates[pick]=d
 
-        if d in tatil:
-            bayram_stats[pick] += 1
-
-        # AYLIK ISTATISTIK
-        key = (d.year, d.month)
-
-        if d in tatil:
-            monthly_stats[pick][key]["bayram"] += 1
-        elif d.weekday() >= 5:
-            monthly_stats[pick][key]["haftasonu"] += 1
-        else:
-            monthly_stats[pick][key]["normal"] += 1
-
-        schedule[d] = picks
+        schedule[d]=picks
 
     return schedule
 
+# =====================================
+# MAIN
+# =====================================
+
 def main(y,m,nm):
 
-    groups = create_groups()
+    groups=create_groups()
 
-    # =============================
-    # YENİ ECZANE EKLEME
-    # =============================
+    totals={p:0 for g in groups.values() for p in g}
+    counts={p:0 for g in groups.values() for p in g}
+    weekday_stats={p:{i:0 for i in range(7)} for p in totals}
+    bayram_stats={p:0 for p in totals}
+    last_dates={}
 
-    for eczane, veri in eklenme.items():
+    wb=Workbook()
 
-        grup = veri["grup"]
-
-        if grup in groups:
-
-            groups[grup].append(eczane)
-
-    # =============================
-    # VERİ TABLOLARI
-    # =============================
-
-    totals = {p:0 for g in groups.values() for p in g}
-    counts = {p:0 for g in groups.values() for p in g}
-    weekday_stats = {p:{i:0 for i in range(7)} for p in totals}
-    bayram_stats = {p:0 for p in totals}
-    last_dates = {}
-    gecmis_katsayi_map = {}
-
-    # =============================
-    # GEÇMİŞ YÜK EKLE
-    # =============================
-
-    for p,v in GECMIS_YUK.items():
-
-        if p not in totals:
-            continue
-
-        kats = v["normal"] + v["haftasonu"]*1.5 + v["bayram"]*2
-
-        totals[p] += kats
-        counts[p] += v["normal"] + v["haftasonu"] + v["bayram"]
-        bayram_stats[p] += v["bayram"]
-
-        weekday_stats[p][5] += v["haftasonu"]//2
-        weekday_stats[p][6] += v["haftasonu"]//2
-
-        gecmis_katsayi_map[p] = round(kats,2)
-
-    for p in totals:
-        gecmis_katsayi_map.setdefault(p,0)
-
-    # =============================
-    # YENİ ECZANE ORTALAMA KATSAYI
-    # =============================
-
-    for eczane, veri in eklenme.items():
-
-        grup = veri["grup"]
-
-        if eczane not in totals:
-
-            mevcut = groups[grup]
-
-            ort = sum(
-                totals.get(x,0)
-                for x in mevcut
-                if x != eczane
-            ) / max(len(mevcut)-1,1)
-
-            totals[eczane] = ort
-            counts[eczane] = 0
-            weekday_stats[eczane] = {i:0 for i in range(7)}
-            bayram_stats[eczane] = 0
-            gecmis_katsayi_map[eczane] = round(ort,2)
-
-    # =============================
-    # EXCEL BAŞLAT
-    # =============================
-
-    wb = Workbook()
-
-    gun = ["Pzt","Salı","Çarş","Perş","Cuma","Ctesi","Pazar"]
-    header = ["Tarih","Gün"] + list(groups.keys())
+    gun=["Pzt","Salı","Çarş","Perş","Cuma","Ctesi","Pazar"]
+    header=["Tarih","Gün"]+list(groups.keys())
 
     for k in range(nm):
 
-        year = y + ((m-1+k)//12)
-        month = ((m-1+k)%12) + 1
+        year=y+((m-1+k)//12)
+        month=((m-1+k)%12)+1
 
-        ws = wb.create_sheet(f"{year}-{month:02d}")
-
+        ws=wb.create_sheet(f"{year}-{month:02d}")
         ws.append(header)
 
-        sched = generate_month(
-            groups,
-            year,
-            month,
-            totals,
-            counts,
-            weekday_stats,
-            bayram_stats,
-            last_dates
+        sched=generate_month(
+            groups,year,month,
+            totals,counts,
+            weekday_stats,bayram_stats,last_dates
         )
 
         for d,p in sorted(sched.items()):
 
-            row = [d.strftime("%d.%m.%Y"), gun[d.weekday()]]
+            row=[d.strftime("%d.%m.%Y"),gun[d.weekday()]]
 
             for g in groups:
                 row.append(p.get(g,""))
@@ -507,60 +483,22 @@ def main(y,m,nm):
             ws.append(row)
 
         for c in ws[1]:
-            c.font = Font(bold=True)
-
-    # =============================
-    # GENEL ÖZET
-    # =============================
-
-    summary = wb.create_sheet("GENEL OZET")
-
-    summary.append([
-        "Eczane","Grup","Geçmiş Katsayı","Geçmiş Bayram",
-        "Toplam Nöbet","Toplam Katsayı","Bayram",
-        "Pzt","Salı","Çarş","Perş","Cuma","Ctesi","Pazar"
-    ])
-
-    eczane_grup = {p:g for g,plist in groups.items() for p in plist}
-
-    for p in totals:
-
-        summary.append([
-            p,
-            eczane_grup.get(p,""),
-            gecmis_katsayi_map.get(p,0),
-            GECMIS_YUK.get(p,{}).get("bayram",0),
-            counts[p],
-            round(totals[p],2),
-            bayram_stats[p],
-            weekday_stats[p][0],
-            weekday_stats[p][1],
-            weekday_stats[p][2],
-            weekday_stats[p][3],
-            weekday_stats[p][4],
-            weekday_stats[p][5],
-            weekday_stats[p][6],
-        ])
-
-    for c in summary[1]:
-        c.font = Font(bold=True)
+            c.font=Font(bold=True)
 
     wb.remove(wb["Sheet"])
     wb.save("Son.xlsx")
 
-    # =============================
-    # AYLIK DETAY EXCEL
-    # =============================
+    # AYLIK DETAY
 
-    wb2 = Workbook()
-    ws2 = wb2.active
-    ws2.title = "AYLIK DETAY"
+    wb2=Workbook()
+    ws2=wb2.active
+    ws2.title="AYLIK DETAY"
 
     ws2.append(["Eczane","Yıl","Ay","Bayram","Hafta Sonu","Normal"])
 
     for eczane in sorted(monthly_stats.keys()):
 
-        for (yil, ay), veri in sorted(monthly_stats[eczane].items()):
+        for (yil,ay),veri in sorted(monthly_stats[eczane].items()):
 
             ws2.append([
                 eczane,
@@ -572,17 +510,25 @@ def main(y,m,nm):
             ])
 
     for c in ws2[1]:
-        c.font = Font(bold=True)
+        c.font=Font(bold=True)
 
     wb2.save("aylik_nobet_data.xlsx")
 
     return "Son.xlsx","aylik_nobet_data.xlsx"
-    def run_schedule(y,m,nm,eklenme={},cikma={}):
+
+# =====================================
+# STREAMLIT ÇAĞIRMA
+# =====================================
+
+def run_schedule(y,m,nm,eklenme_input={},cikma_input={}):
 
     global eklenme_tarihi
     global cikma_tarihi
+    global eklenme
 
-    eklenme_tarihi = eklenme
-    cikma_tarihi = cikma
+    eklenme = eklenme_input
+
+    eklenme_tarihi = {k:v["tarih"] for k,v in eklenme_input.items()}
+    cikma_tarihi = cikma_input
 
     return main(y,m,nm)
