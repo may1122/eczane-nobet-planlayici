@@ -318,11 +318,11 @@ def create_groups():
         "A3": ["ESRA AKSOY","NAR","AVŞAROĞLU","MERT","GAZİ","DÖKÜCÜ","AKKÜNCÜ","ANNEM","BİLAL"],
 
         "B1": 
-["NİŞANTAŞI","EDA","ŞENEL","FARAH HATİPOĞLU","MERVE","ELVİN","BİNEVLER"],
+["NİŞANTAŞI","EDA","ŞENEL","FARAH HATİPOĞLU","MERVE","ELVİN","BİNEVLER","TEKEREK"],
         "B2":
 ["SERPİL","FURKAN","ARISOY","SU","AKASYA","CENNET","ÇAĞATAY","İNCEER","HİLAL"],       
         "B3":
-["TEKEREK","KAYNAR","NATUREL","OKAN","ESRA BÜYÜKDERELİ","BÜŞRA ATA","BAL","GLSAH","CEYDA İLHAN"],
+["KAYNAR","NATUREL","OKAN","ESRA BÜYÜKDERELİ","BÜŞRA ATA","BAL","GLSAH","CEYDA İLHAN"],
         "C1":
 ["FİLİZ","ÇİĞDEM","KARŞIYAKA","DEMET","MURAT","HÜDAYİOĞLU","CANPOLAT", "DAVARCIOĞLU"],
         "C2": 
