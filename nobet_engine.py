@@ -577,3 +577,12 @@ def main(y,m,nm):
     wb2.save("aylik_nobet_data.xlsx")
 
     return "Son.xlsx","aylik_nobet_data.xlsx"
+    def run_schedule(y,m,nm,eklenme={},cikma={}):
+
+    global eklenme_tarihi
+    global cikma_tarihi
+
+    eklenme_tarihi = eklenme
+    cikma_tarihi = cikma
+
+    return main(y,m,nm)
