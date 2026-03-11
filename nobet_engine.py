@@ -501,6 +501,8 @@ def main(y,m,nm):
     summary.append([
         "Eczane",
         "Grup",
+        "Geçmiş Katsayı",
+        "Geçmiş Bayram",
         "Toplam Nöbet",
         "Toplam Katsayı",
         "Bayram",
