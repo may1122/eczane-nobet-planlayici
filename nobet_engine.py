@@ -396,19 +396,35 @@ def generate_month(groups, year, month, totals, counts, weekday_stats, bayram_st
 
 def main(y,m,nm):
 
-    global monthly_stats
-    monthly_stats = defaultdict(lambda: defaultdict(lambda: {"bayram":0,"haftasonu":0,"normal":0}))
+    groups = create_groups()
 
-    groups=create_groups()
+    # =============================
+    # YENİ ECZANE EKLEME
+    # =============================
 
-    totals={p:0 for g in groups.values() for p in g}
-    counts={p:0 for g in groups.values() for p in g}
-    weekday_stats={p:{i:0 for i in range(7)} for p in totals}
-    bayram_stats={p:0 for p in totals}
-    last_dates={}
-    gecmis_katsayi_map={}
+    for eczane, veri in eklenme.items():
 
-    # GEÇMİŞ YÜKLERİ EKLE
+        grup = veri["grup"]
+
+        if grup in groups:
+
+            groups[grup].append(eczane)
+
+    # =============================
+    # VERİ TABLOLARI
+    # =============================
+
+    totals = {p:0 for g in groups.values() for p in g}
+    counts = {p:0 for g in groups.values() for p in g}
+    weekday_stats = {p:{i:0 for i in range(7)} for p in totals}
+    bayram_stats = {p:0 for p in totals}
+    last_dates = {}
+    gecmis_katsayi_map = {}
+
+    # =============================
+    # GEÇMİŞ YÜK EKLE
+    # =============================
+
     for p,v in GECMIS_YUK.items():
 
         if p not in totals:
@@ -416,37 +432,74 @@ def main(y,m,nm):
 
         kats = v["normal"] + v["haftasonu"]*1.5 + v["bayram"]*2
 
-        totals[p]+=kats
-        counts[p]+=v["normal"]+v["haftasonu"]+v["bayram"]
-        bayram_stats[p]+=v["bayram"]
+        totals[p] += kats
+        counts[p] += v["normal"] + v["haftasonu"] + v["bayram"]
+        bayram_stats[p] += v["bayram"]
 
-        weekday_stats[p][5]+=v["haftasonu"]//2
-        weekday_stats[p][6]+=v["haftasonu"]//2
+        weekday_stats[p][5] += v["haftasonu"]//2
+        weekday_stats[p][6] += v["haftasonu"]//2
 
-        gecmis_katsayi_map[p]=round(kats,2)
+        gecmis_katsayi_map[p] = round(kats,2)
 
     for p in totals:
         gecmis_katsayi_map.setdefault(p,0)
 
-    wb=Workbook()
+    # =============================
+    # YENİ ECZANE ORTALAMA KATSAYI
+    # =============================
 
-    gun=["Pzt","Salı","Çarş","Perş","Cuma","Ctesi","Pazar"]
-    header=["Tarih","Gün"]+list(groups.keys())
+    for eczane, veri in eklenme.items():
+
+        grup = veri["grup"]
+
+        if eczane not in totals:
+
+            mevcut = groups[grup]
+
+            ort = sum(
+                totals.get(x,0)
+                for x in mevcut
+                if x != eczane
+            ) / max(len(mevcut)-1,1)
+
+            totals[eczane] = ort
+            counts[eczane] = 0
+            weekday_stats[eczane] = {i:0 for i in range(7)}
+            bayram_stats[eczane] = 0
+            gecmis_katsayi_map[eczane] = round(ort,2)
+
+    # =============================
+    # EXCEL BAŞLAT
+    # =============================
+
+    wb = Workbook()
+
+    gun = ["Pzt","Salı","Çarş","Perş","Cuma","Ctesi","Pazar"]
+    header = ["Tarih","Gün"] + list(groups.keys())
 
     for k in range(nm):
 
-        year=y+((m-1+k)//12)
-        month=((m-1+k)%12)+1
+        year = y + ((m-1+k)//12)
+        month = ((m-1+k)%12) + 1
 
-        ws=wb.create_sheet(f"{year}-{month:02d}")
+        ws = wb.create_sheet(f"{year}-{month:02d}")
 
         ws.append(header)
 
-        sched=generate_month(groups,year,month,totals,counts,weekday_stats,bayram_stats,last_dates)
+        sched = generate_month(
+            groups,
+            year,
+            month,
+            totals,
+            counts,
+            weekday_stats,
+            bayram_stats,
+            last_dates
+        )
 
         for d,p in sorted(sched.items()):
 
-            row=[d.strftime("%d.%m.%Y"),gun[d.weekday()]]
+            row = [d.strftime("%d.%m.%Y"), gun[d.weekday()]]
 
             for g in groups:
                 row.append(p.get(g,""))
@@ -454,13 +507,13 @@ def main(y,m,nm):
             ws.append(row)
 
         for c in ws[1]:
-            c.font=Font(bold=True)
+            c.font = Font(bold=True)
 
-    # =========================
-    # GENEL OZET
-    # =========================
+    # =============================
+    # GENEL ÖZET
+    # =============================
 
-    summary=wb.create_sheet("GENEL OZET")
+    summary = wb.create_sheet("GENEL OZET")
 
     summary.append([
         "Eczane","Grup","Geçmiş Katsayı","Geçmiş Bayram",
@@ -468,7 +521,7 @@ def main(y,m,nm):
         "Pzt","Salı","Çarş","Perş","Cuma","Ctesi","Pazar"
     ])
 
-    eczane_grup={p:g for g,plist in groups.items() for p in plist}
+    eczane_grup = {p:g for g,plist in groups.items() for p in plist}
 
     for p in totals:
 
@@ -495,9 +548,9 @@ def main(y,m,nm):
     wb.remove(wb["Sheet"])
     wb.save("Son.xlsx")
 
-    # =========================
-    # AYLIK NÖBET DATA
-    # =========================
+    # =============================
+    # AYLIK DETAY EXCEL
+    # =============================
 
     wb2 = Workbook()
     ws2 = wb2.active
@@ -506,7 +559,9 @@ def main(y,m,nm):
     ws2.append(["Eczane","Yıl","Ay","Bayram","Hafta Sonu","Normal"])
 
     for eczane in sorted(monthly_stats.keys()):
+
         for (yil, ay), veri in sorted(monthly_stats[eczane].items()):
+
             ws2.append([
                 eczane,
                 yil,
@@ -522,24 +577,3 @@ def main(y,m,nm):
     wb2.save("aylik_nobet_data.xlsx")
 
     return "Son.xlsx","aylik_nobet_data.xlsx"
-    return "Son.xlsx","aylik_nobet_data.xlsx"
-
-
-def run_schedule(y, m, nm, eklenme=None, cikma=None):
-
-    global eklenme_tarihi
-    global cikma_tarihi
-
-    # Eğer panelden veri gelmezse boş sözlük kullan
-    if eklenme is None:
-        eklenme = {}
-
-    if cikma is None:
-        cikma = {}
-
-    # Global değişkenleri güncelle
-    eklenme_tarihi = {k:v["tarih"] for k,v in eklenme.items()}
-    cikma_tarihi = cikma
-
-    # Ana planlama fonksiyonunu çalıştır
-    return main(y, m, nm)
