@@ -1,0 +1,1 @@
+# eczane-nobet-planlayici
