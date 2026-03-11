@@ -17,7 +17,6 @@ eklenme_tarihi = {}
 cikma_tarihi = {}
 
 GECMIS_YUK = {
-GECMIS_YUK = {
 "YÖRÜKSELİM": {"bayram": 2, "haftasonu": 0, "normal": 2},
 "CEYLAN": {"bayram": 2, "haftasonu": 1, "normal": 2},
 "KAZANCI": {"bayram": 2, "haftasonu": 0, "normal": 2},
