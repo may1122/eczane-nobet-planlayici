@@ -502,9 +502,8 @@ def main(y,m,nm):
         "Eczane",
         "Grup",
         "Geçmiş Katsayı",
-        "Geçmiş Bayram",
-        "Toplam Nöbet",
         "Toplam Katsayı",
+        "Geçmiş Bayram",
         "Bayram",
         "Pzt","Salı","Çarş","Perş","Cuma","Ctesi","Pazar"
     ])
