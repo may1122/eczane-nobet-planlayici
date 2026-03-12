@@ -1,10 +1,8 @@
 import streamlit as st
 from nobet_engine import run_schedule
 import datetime
-
-# ==============================
-# SAYFA AYARI
-# ==============================
+import pandas as pd
+import plotly.express as px
 
 st.set_page_config(
     page_title="Eczane Nöbet Sistemi",
@@ -14,27 +12,22 @@ st.set_page_config(
 
 st.title("💊 Eczane Nöbet Yönetim Sistemi")
 
-# ==============================
+# =========================
 # TAB YAPISI
-# ==============================
+# =========================
 
 tab1, tab2 = st.tabs([
     "📅 Nöbet Planlayıcı",
-    "📊 Analiz / Dashboard"
+    "📊 Nöbet Analiz Sistemi"
 ])
 
-# ======================================================
-# TAB 1 → SENİN MEVCUT NÖBET PLANLAYICI ARAYÜZÜN
-# ======================================================
+# =====================================================
+# TAB 1 → NÖBET PLANLAYICI
+# =====================================================
 
 with tab1:
 
-    st.title("💊 Eczane Nöbet Planlayıcı")
     st.caption("Akıllı nöbet planlama sistemi")
-
-    # ==============================
-    # SIDEBAR - PLAN AYARLARI
-    # ==============================
 
     with st.sidebar:
 
@@ -62,10 +55,6 @@ with tab1:
         st.divider()
 
         planla = st.button("🚀 Plan Oluştur", use_container_width=True)
-
-    # ==============================
-    # ECZANE DEĞİŞİKLİK PANELİ
-    # ==============================
 
     st.subheader("🔧 Eczane Değişiklikleri")
 
@@ -122,10 +111,6 @@ with tab1:
 
     st.divider()
 
-    # ==============================
-    # PLAN OLUŞTUR
-    # ==============================
-
     if planla:
 
         with st.spinner("Plan oluşturuluyor..."):
@@ -145,10 +130,6 @@ with tab1:
                 st.session_state.aylik_data = f.read()
 
         st.success("Plan başarıyla oluşturuldu!")
-
-    # ==============================
-    # DOWNLOAD PANELİ
-    # ==============================
 
     if "plan_data" in st.session_state:
 
@@ -173,12 +154,151 @@ with tab1:
             )
 
 
-# ======================================================
-# TAB 2 → İKİNCİ STREAMLIT UYGULAMAN
-# ======================================================
+# =====================================================
+# TAB 2 → NÖBET ANALİZ DASHBOARD
+# =====================================================
 
 with tab2:
 
-    st.header("📊 Analiz / Dashboard")
+    st.title("💊 Eczane Nöbet Takip Sistemi")
 
-    st.info("İkinci streamlit uygulamanın kodunu buraya ekleyeceğiz.")
+    @st.cache_data
+    def load_excel(file):
+
+        xls = pd.ExcelFile(file)
+
+        all_data = []
+        genel = None
+
+        for sheet in xls.sheet_names:
+
+            df = pd.read_excel(file, sheet_name=sheet)
+            df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+
+            if "GENEL" in sheet.upper():
+
+                genel = df[[
+                    "Eczane",
+                    "Grup",
+                    "Geçmiş Katsayı",
+                    "Geçmiş Bayram",
+                    "Toplam Nöbet",
+                    "Toplam Katsayı",
+                    "Bayram"
+                ]]
+
+                continue
+
+            if "Tarih" not in df.columns:
+                continue
+
+            df_long = df.melt(
+                id_vars=["Tarih", "Gün"],
+                var_name="Grup",
+                value_name="Eczane"
+            )
+
+            df_long = df_long.dropna(subset=["Eczane"])
+            df_long["Ay"] = sheet
+
+            all_data.append(df_long)
+
+        df = pd.concat(all_data, ignore_index=True)
+
+        return df, genel
+
+
+    file = st.file_uploader("Excel dosyasını yükleyin", type=["xlsx"])
+
+    if not file:
+        st.info("Başlamak için Excel dosyasını yükleyin.")
+        st.stop()
+
+    df, genel = load_excel(file)
+
+    menu = st.sidebar.radio("Menü", [
+        "Genel Özet",
+        "Tarih Seç",
+        "Aylık Takvim",
+        "Grup Analizi",
+        "Eczane Analizi"
+    ])
+
+    if menu == "Genel Özet":
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric("Toplam Nöbet", len(df))
+        col2.metric("Toplam Eczane", df["Eczane"].nunique())
+        col3.metric("Toplam Ay", df["Ay"].nunique())
+        col4.metric("Ortalama Nöbet", round(len(df) / df["Eczane"].nunique(), 2))
+
+        gun_sayim = df["Gün"].value_counts().reset_index()
+        gun_sayim.columns = ["Gün", "Sayı"]
+
+        fig = px.pie(
+            gun_sayim,
+            names="Gün",
+            values="Sayı",
+            hole=0.4
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    elif menu == "Tarih Seç":
+
+        tarih = st.selectbox("Tarih", sorted(df["Tarih"].unique()))
+        sonuc = df[df["Tarih"] == tarih]
+        st.dataframe(sonuc)
+
+    elif menu == "Aylık Takvim":
+
+        ay = st.selectbox("Ay seç", sorted(df["Ay"].unique()))
+        sonuc = df[df["Ay"] == ay]
+
+        pivot = sonuc.pivot(
+            index="Tarih",
+            columns="Grup",
+            values="Eczane"
+        )
+
+        pivot = pivot.fillna("")
+        st.dataframe(pivot, use_container_width=True)
+
+    elif menu == "Grup Analizi":
+
+        grup = st.selectbox(
+            "Grup seç",
+            sorted(genel["Grup"].unique())
+        )
+
+        sonuc = df[df["Grup"] == grup]
+
+        sayim = (
+            sonuc
+            .groupby(["Gün","Eczane"])
+            .size()
+            .reset_index(name="Nöbet Sayısı")
+        )
+
+        fig = px.bar(
+            sayim,
+            x="Gün",
+            y="Nöbet Sayısı",
+            color="Eczane",
+            barmode="group"
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    elif menu == "Eczane Analizi":
+
+        eczane = st.selectbox(
+            "Eczane",
+            sorted(df["Eczane"].unique())
+        )
+
+        sonuc = df[df["Eczane"] == eczane]
+
+        st.metric("Toplam Nöbet", len(sonuc))
+        st.dataframe(sonuc.sort_values("Tarih"))
