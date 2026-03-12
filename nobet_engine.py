@@ -446,13 +446,6 @@ def generate_month(groups,year,month,totals,counts,weekday_stats,bayram_stats,la
         counts[pick]+=1
         weekday_stats[pick][d.weekday()]+=1
         last_dates[pick]=d
-        key=(d.year,d.month)
-        if d in tatil:
-            monthly_stats[pick][key]["bayram"]+=1
-        elif d.weekday()>=5:
-            monthly_stats[pick][key]["haftasonu"]+=1
-        else:
-            monthly_stats[pick][key]["normal"]+=1
 
         schedule[d]=picks
 
@@ -463,7 +456,6 @@ def generate_month(groups,year,month,totals,counts,weekday_stats,bayram_stats,la
 # =====================================
 def main(y,m,nm):
 
-    random.seed(42)
     groups = create_groups()
 
     totals = {p:0 for g in groups.values() for p in g}
@@ -600,11 +592,8 @@ def main(y,m,nm):
         "Hafta Sonu",
         "Normal"
     ])
-    
-    for eczane in sorted(totals.keys()):
 
-        if eczane not in monthly_stats:
-        continue
+    for eczane in sorted(monthly_stats.keys()):
 
         for (yil,ay),veri in sorted(monthly_stats[eczane].items()):
 
@@ -615,7 +604,7 @@ def main(y,m,nm):
                 veri["bayram"],
                 veri["haftasonu"],
                 veri["normal"]
-        ])
+            ])
 
     for c in ws2[1]:
         c.font = Font(bold=True)
