@@ -594,6 +594,7 @@ def main(y,m,nm):
     ])
 
     for eczane in sorted(totals.keys()):
+        
         if eczane not in monthly_stats:
             continue
             
