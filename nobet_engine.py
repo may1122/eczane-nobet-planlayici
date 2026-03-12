@@ -456,6 +456,7 @@ def generate_month(groups,year,month,totals,counts,weekday_stats,bayram_stats,la
 # =====================================
 def main(y,m,nm):
 
+    random.seed(42)
     groups = create_groups()
 
     totals = {p:0 for g in groups.values() for p in g}
