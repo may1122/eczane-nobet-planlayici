@@ -12,7 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("💊 Kahramanmaraş Eczane Nöbet Planlayıcı")
+st.title("💊 Eczane Nöbet Planlayıcı")
 st.caption("Akıllı nöbet planlama sistemi")
 
 # ==============================
