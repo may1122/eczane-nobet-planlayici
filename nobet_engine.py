@@ -462,6 +462,20 @@ def main(y,m,nm):
     counts = {p:0 for g in groups.values() for p in g}
     weekday_stats = {p:{i:0 for i in range(7)} for p in totals}
     bayram_stats = {p:0 for p in totals}
+    for p,v in GECMIS_YUK.items():
+
+        if p not in totals:
+            continue
+
+        kats = v["normal"] + v["haftasonu"]*1.5 + v["bayram"]*2
+
+        totals[p] += kats
+        counts[p] += v["normal"] + v["haftasonu"] + v["bayram"]
+        bayram_stats[p] += v["bayram"]
+
+        weekday_stats[p][5] += v["haftasonu"]//2
+        weekday_stats[p][6] += v["haftasonu"]//2
+        
     last_dates = {}
 
     wb = Workbook()
