@@ -407,7 +407,7 @@ def generate_month(groups,year,month,totals,counts,weekday_stats,bayram_stats,la
 
         picks={}
 
-        for g in KOMB_ABC[i%3] + KOMB_DEG[i%3]:
+        for g in KOMB_ABC[i%6] + KOMB_DEG[i%6]:
 
             pick = zorunlu_secim(
                 groups[g],d,w,tatil,
