@@ -446,6 +446,13 @@ def generate_month(groups,year,month,totals,counts,weekday_stats,bayram_stats,la
         counts[pick]+=1
         weekday_stats[pick][d.weekday()]+=1
         last_dates[pick]=d
+        key=(d.year,d.month)
+        if d in tatil:
+            monthly_stats[pick][key]["bayram"]+=1
+        elif d.weekday()>=5:
+            monthly_stats[pick][key]["haftasonu"]+=1
+        else:
+            monthly_stats[pick][key]["normal"]+=1
 
         schedule[d]=picks
 
