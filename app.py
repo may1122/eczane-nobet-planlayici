@@ -7,7 +7,7 @@ import datetime
 # ==============================
 
 st.set_page_config(
-    page_title="Kahramanmaraş Eczane Nöbet Planlayıcı",
+    page_title="Eczane Nöbet Planlayıcı",
     page_icon="💊",
     layout="wide"
 )
