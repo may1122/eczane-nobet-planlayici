@@ -601,7 +601,7 @@ def main(y,m,nm):
         "Normal"
     ])
 
-    for eczane in sorted(monthly_stats.keys()):
+   for eczane in sorted(totals.keys()):
 
         for (yil,ay),veri in sorted(monthly_stats[eczane].items()):
 
