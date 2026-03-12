@@ -601,20 +601,20 @@ def main(y,m,nm):
         "Normal"
     ])
     
-for eczane in sorted(totals.keys()):
+    for eczane in sorted(totals.keys()):
 
-    if eczane not in monthly_stats:
+        if eczane not in monthly_stats:
         continue
 
-    for (yil,ay),veri in sorted(monthly_stats[eczane].items()):
+        for (yil,ay),veri in sorted(monthly_stats[eczane].items()):
 
-        ws2.append([
-            eczane,
-            yil,
-            ay,
-            veri["bayram"],
-            veri["haftasonu"],
-            veri["normal"]
+            ws2.append([
+                eczane,
+                yil,
+                ay,
+                veri["bayram"],
+                veri["haftasonu"],
+                veri["normal"]
         ])
 
     for c in ws2[1]:
