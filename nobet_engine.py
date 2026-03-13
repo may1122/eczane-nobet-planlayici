@@ -428,9 +428,9 @@ def generate_month(groups,year,month,totals,counts,weekday_stats,bayram_stats,la
 
             if d in tatil:
                 monthly_stats[pick][key]["bayram"]+=1
-            elif d.weekday()>=5:
+            if d.weekday()>=5:
                 monthly_stats[pick][key]["haftasonu"]+=1
-            else:
+            if  d not in tatil and d.weekday() < 5:
                 monthly_stats[pick][key]["normal"]+=1
 
         fg=F_ROTASYON[i%3]
@@ -482,7 +482,7 @@ def main(y,m,nm):
         bayram_stats[p] += v["bayram"]
 
         weekday_stats[p][5] += v["haftasonu"]//2
-        weekday_stats[p][6] += v["haftasonu"]//2
+        weekday_stats[p][6] += v["haftasonu"]-v["haftasonu"]//2
         
     last_dates = {}
 
@@ -642,3 +642,4 @@ def run_schedule(y,m,nm,eklenme_input={},cikma_input={}):
     cikma_tarihi = cikma_input
 
     return main(y,m,nm)
+
