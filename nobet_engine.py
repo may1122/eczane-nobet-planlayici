@@ -645,41 +645,58 @@ def zorunlu_secim(
     month_total_days,
     today_used
 ):
-    kademe1 = []
-    kademe3 = []
+    grup_norm = [normalize_name(p) for p in grup]
 
-    for p in grup:
-        p = normalize_name(p)
-
+    aktifler = []
+    for p in grup_norm:
         if p in today_used:
             continue
-
         if not is_person_active_on_date(p, d):
             continue
+        aktifler.append(p)
 
+    if not aktifler:
+        aktifler = [p for p in grup_norm if p not in today_used] or list(grup_norm)
+
+    kademe1 = []
+    kademe2 = []
+    kademe3 = []
+
+    for p in aktifler:
         gap = get_gap_days(last_dates, p, d)
 
-        if gap < SETTINGS.MIN_GAP_DAYS:
-            continue
-
-        if weekday_stats[p][d.weekday()] < SETTINGS.MAX_SAME_WEEKDAY:
+        if gap >= SETTINGS.MIN_GAP_DAYS and weekday_stats[p][d.weekday()] < SETTINGS.MAX_SAME_WEEKDAY:
             kademe1.append(p)
+        elif weekday_stats[p][d.weekday()] < SETTINGS.MAX_SAME_WEEKDAY:
+            kademe2.append(p)
         else:
             kademe3.append(p)
 
-    adaylar = kademe1 or kademe3 or [normalize_name(x) for x in grup if normalize_name(x) not in today_used]
-    if not adaylar:
-        adaylar = [normalize_name(x) for x in grup]
+    adaylar = kademe1 or kademe2 or kademe3 or list(aktifler)
 
     max_gap_asanlar = [p for p in adaylar if get_gap_days(last_dates, p, d) > SETTINGS.MAX_GAP_DAYS]
     if max_gap_asanlar:
         adaylar = max_gap_asanlar
 
     if d in tatil:
-        adaylar = [p for p in adaylar if bayram_year_stats[p][d.year] == 0]
+        bayram_uygun = [p for p in adaylar if bayram_year_stats[p][d.year] == 0]
+        if bayram_uygun:
+            adaylar = bayram_uygun
+
         if adaylar:
             min_b = min(bayram_stats[p] for p in adaylar)
-            adaylar = [p for p in adaylar if bayram_stats[p] == min_b]
+            esitler = [p for p in adaylar if bayram_stats[p] == min_b]
+            if esitler:
+                adaylar = esitler
+
+    elif d in arefe:
+        pass
+
+    if not adaylar:
+        adaylar = [p for p in aktifler if p not in today_used] or list(aktifler) or list(grup_norm)
+
+    if not adaylar:
+        raise Exception(f"Aday bulunamadı | Tarih={d} | Grup={grup}")
 
     pick = min(
         adaylar,
