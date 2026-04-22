@@ -204,7 +204,7 @@ st.markdown(
     <div class="hero-card">
         <div class="hero-grid">
             <div style="flex:1; min-width:320px;">
-                <div class="hero-badge">AYÇA • Akıllı Nöbet Planlama</div>
+                <div class="hero-badge">AYÇA • Akıllı Yazılım Çözüm Asistanı</div>
                 <h1 class="hero-title">Eczane Nöbet Planlayıcı</h1>
                 <p class="hero-sub">
                     Geçmiş yük verileri, bayram geçmişi ve dönemsel denge mantığı ile
